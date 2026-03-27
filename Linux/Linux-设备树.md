@@ -369,13 +369,12 @@ hexdump -C /proc/device-tree/model
 
 1. `Linux-核心基础`
 2. `硬件-基础知识`
+3. `Linux-pinctrl与GPIO`
 
 后续可以继续拆分为这些主题：
 
 1. `Linux-platform总线与设备模型`
 2. `Linux-设备树常用属性`
-3. `Linux-pinctrl与GPIO`
-4. `Linux-I2C设备树绑定`
-5. `Linux-SPI设备树绑定`
-6. `Linux-设备树Overlay`
-
+3. `Linux-I2C设备树绑定`
+4. `Linux-SPI设备树绑定`
+5. `Linux-设备树Overlay`
