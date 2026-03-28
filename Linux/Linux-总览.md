@@ -48,5 +48,5 @@
 1. `嵌入式-工作衔接总览`
 2. `Linux-核心基础`
 3. `Linux-设备树`
-4. `Linux-pinctrl与GPIO`
-
+4. `Linux-platform总线与设备模型`
+5. `Linux-pinctrl与GPIO`
