@@ -254,13 +254,6 @@ int main(void)
 }
 ```
 
-编译和运行：
-
-```bash
-gcc -Wall -Wextra -Werror -std=c11 demo.c -o demo
-./demo
-```
-
 预期输出：
 
 ```text
