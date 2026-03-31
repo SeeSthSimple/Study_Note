@@ -35,7 +35,7 @@
 4. `Linux-platform总线与设备模型`
 5. `Linux-设备树常用属性`
 6. `Linux-中断子系统基础`
-7. `Linux-内核日志与排障`
+7. `Linux-proc与sysfs基础`
 
 ## 关键要点
 
@@ -50,3 +50,4 @@
 3. `Linux-设备树`
 4. `Linux-platform总线与设备模型`
 5. `Linux-pinctrl与GPIO`
+6. `Linux-内核日志与排障`
