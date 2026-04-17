@@ -2,6 +2,128 @@
 
 ## 原始问题
 
+<<<<<<< HEAD
+为什么同一个物理引脚有时能当 GPIO，有时却必须配置成 UART、I2C 或 SPI？Linux 里的 `pinctrl` 和 GPIO 又是什么关系，设备树里为什么经常同时出现 `pinctrl-0` 和 `gpios`？
+
+## 先给结论
+
+`pinctrl` 解决的是“这个引脚当前复用成什么功能、带什么电气属性”，GPIO 解决的是“当它已经作为 GPIO 使用时，怎么读写电平或配置中断”。
+
+先记住下面几个结论：
+
+1. `pinctrl` 关注的是引脚复用、上下拉、驱动能力、输入使能等 pin 配置。
+2. GPIO 关注的是方向、电平读写、有效电平和中断触发。
+3. 很多设备要先通过 `pinctrl` 把管脚切到正确功能，再由 GPIO 子系统或外设驱动实际使用。
+4. 设备树里的 `pinctrl-0` 通常描述默认引脚状态，`reset-gpios`、`irq-gpios` 这类属性才是在表达某条 GPIO 资源。
+5. 排障时如果只看 GPIO API，不看 pinmux 和电气配置，很容易误判。
+
+## 这个知识解决什么问题
+
+1. 引脚明明连对了，但软件里怎么拉都没反应。
+2. 设备树里同时出现 `pinctrl` 和 `gpios`，却分不清各自职责。
+3. GPIO 在裸机能用，移到 Linux 后却因为 pinmux、active-low 或中断配置出问题。
+4. 驱动 `probe` 进了，但 reset、irq、ready 这类控制脚行为不对。
+
+## 核心概念 / 本质机制
+
+### 1. `pinctrl` 管的是“引脚应该变成什么”
+
+一个物理引脚通常能复用成多种功能，例如：
+
+1. GPIO
+2. UART TX/RX
+3. I2C SCL/SDA
+4. SPI CLK/MOSI/MISO
+5. PWM 或中断输入
+
+`pinctrl` 子系统负责把这些复用关系和电气属性描述清楚。
+
+### 2. GPIO 子系统管的是“作为 GPIO 时怎么用”
+
+当某根引脚已经工作在 GPIO 模式后，驱动更关心的是：
+
+1. 它是输入还是输出。
+2. 逻辑有效电平是什么。
+3. 需要读值、拉高拉低，还是申请成中断。
+
+所以 `pinctrl` 和 GPIO 不是互斥关系，而是上下游关系。
+
+### 3. 设备树里两类信息长什么样
+
+常见设备树写法通常像这样：
+
+```dts
+mydev@0 {
+    compatible = "demo,my-device";
+    pinctrl-names = "default";
+    pinctrl-0 = <&mydev_pins>;
+    reset-gpios = <&gpio1 3 GPIO_ACTIVE_LOW>;
+    irq-gpios = <&gpio1 5 GPIO_ACTIVE_HIGH>;
+};
+```
+
+可以这样理解：
+
+1. `pinctrl-0`：告诉内核默认引脚组该怎么复用、上下拉和驱动能力如何配置。
+2. `reset-gpios`：告诉驱动“我还需要一条 GPIO 作为 reset 控制脚”。
+3. `irq-gpios`：告诉驱动“我还需要一条 GPIO 作为中断或状态输入”。
+
+### 4. 为什么很多 GPIO 问题其实根因在 pinctrl
+
+因为驱动即使成功申请了 GPIO，也不代表物理引脚已经处在正确模式。
+
+常见根因包括：
+
+1. pinmux 没切到 GPIO 或目标外设功能。
+2. 上下拉配置不对，输入悬空。
+3. active-low 理解反了。
+4. 中断触发类型和硬件电平变化不匹配。
+
+## 数据流 / 控制流 / 时序关系
+
+典型主线通常是：
+
+```text
+设备树描述 pinctrl 和 gpio 资源
+-> 内核解析 pinctrl 默认状态
+-> 驱动 probe
+-> 驱动通过 gpiod 接口获取 reset/irq 等 GPIO
+-> 驱动拉复位脚、读状态脚或申请中断
+-> 结合日志和波形验证引脚行为
+```
+
+## 最小示例
+
+### 1. 设备树片段
+
+```dts
+mydev_pins: mydev-pins {
+    pins = "PA3", "PA5";
+    function = "gpio";
+    bias-pull-up;
+};
+
+mydev@0 {
+    compatible = "demo,my-device";
+    pinctrl-names = "default";
+    pinctrl-0 = <&mydev_pins>;
+    reset-gpios = <&gpio1 3 GPIO_ACTIVE_LOW>;
+};
+```
+
+### 2. 驱动里获取 GPIO
+
+```c
+struct gpio_desc *reset_gpio;
+
+reset_gpio = devm_gpiod_get(dev, "reset", GPIOD_OUT_HIGH);
+if (IS_ERR(reset_gpio))
+    return PTR_ERR(reset_gpio);
+
+gpiod_set_value_cansleep(reset_gpio, 0);
+```
+
+=======
 为什么 Linux 里很多设备树节点明明 `compatible`、`reg`、`interrupts` 都写对了，驱动也 `probe` 成功了，外设还是不工作？为什么有时候明明拿到了 GPIO，实际电平却不对，或者根本没有波形？`pinctrl` 和 `GPIO` 到底各自管什么，它们为什么总是一起出现却又不是一回事？
 
 ## 先给结论
@@ -287,10 +409,17 @@ gpiod 接口会按“前缀名 + `-gpios`”的约定去匹配资源。
 
 所以“描述符拿到了”只是资源入口成功，不是功能闭环成功。
 
+>>>>>>> 0e44dbb1d2c2be2b86aa1e8cb21055963b47cba2
 ## 正确写法 vs 常见错误写法
 
 | 场景 | 正确写法 | 常见错误写法 | 为什么错 |
 | --- | --- | --- | --- |
+<<<<<<< HEAD
+| 引脚复用 | 先确认 pinmux / `pinctrl-0` | 只改 GPIO API | 引脚可能根本不在目标模式 |
+| GPIO 极性 | 用 `GPIO_ACTIVE_LOW/HIGH` 明确语义 | 默认把 1 当有效 | 容易把复位、使能逻辑写反 |
+| 驱动获取资源 | 用 `gpiod` / 设备树属性 | 在驱动里硬编码编号 | 可移植性差，板级差异难维护 |
+| 排障 | 同时看日志、设备树、波形 | 只盯一层代码 | 根因可能在 pinctrl 或硬件 |
+=======
 | 功能理解 | `pinctrl` 管复用和电气属性，GPIO 管逻辑线控制 | 把 pinctrl 和 GPIO 当一回事 | 很容易排错方向跑偏 |
 | 外设默认引脚 | 配 `pinctrl-names` / `pinctrl-0` | 只配 `*-gpios`，不配 pinctrl | 设备可能 probe 成功但功能不通 |
 | GPIO 获取 | 用 `devm_gpiod_get_optional(dev, "reset", ...)` 等逻辑名接口 | 硬编码全局 GPIO 编号 | 可移植性和维护性差 |
@@ -305,11 +434,31 @@ gpiod 接口会按“前缀名 + `-gpios`”的约定去匹配资源。
 3. 某些 GPIO 控制器访问可能会睡眠，因此应区分 `gpiod_set_value()` 和 `gpiod_set_value_cansleep()` 的使用语境。
 4. 用户态旧式 `sysfs GPIO` 接口已逐步被 character device 接口替代，写新代码时不要再把它当首选。
 5. 这篇笔记主要讲设备树和驱动里的 pinctrl/GPIO 主线，不展开每个 SoC 的 pin mux 细节寄存器。
+>>>>>>> 0e44dbb1d2c2be2b86aa1e8cb21055963b47cba2
 
 ## 常见坑与排查
 
 | 现象 | 常见根因 | 优先验证方法 |
 | --- | --- | --- |
+<<<<<<< HEAD
+| GPIO 拉高拉低没反应 | 引脚没切到 GPIO；电气配置不对 | 看设备树 pinctrl 和寄存器状态 |
+| 中断不触发 | 引脚复用错；触发类型不对 | 看中断配置、抓波形、查 `/proc/interrupts` |
+| reset 脚逻辑相反 | active-low 理解反了 | 核对原理图和 `GPIO_ACTIVE_LOW` |
+| 输入值乱跳 | 上下拉缺失；引脚悬空 | 看 bias 配置和静态电平 |
+
+## 工程落地建议
+
+1. 看到 GPIO 问题时，默认同时检查原理图、`pinctrl`、设备树属性和驱动调用。
+2. Linux 新驱动优先用描述符接口 `gpiod`，不要继续依赖旧式全局 GPIO 编号心智模型。
+3. 对 reset、enable、irq 这类控制脚，代码里尽量用“逻辑动作”命名，避免只写裸电平。
+
+## 关键要点
+
+1. `pinctrl` 解决引脚复用和电气配置，GPIO 解决已作为 GPIO 时的读写与中断。
+2. `pinctrl-0` 和 `*-gpios` 经常同时存在，但职责不同。
+3. 很多 GPIO 故障的根因不在 API，而在 pinmux、电气配置或有效电平理解。
+4. Linux 驱动里优先建立“设备树 -> pinctrl -> gpiod -> 波形验证”的排障链路。
+=======
 | 驱动 `probe` 成功但外设没波形 | pinctrl 没切到外设功能；默认态没生效 | 查设备树、`/sys/kernel/debug/pinctrl`、示波器 |
 | reset GPIO 获取成功但设备还是没复位 | 极性写反；初值不对；脚被复用占用 | 查 `GPIO_ACTIVE_*`、波形、pinctrl 配置 |
 | I2C/SPI/UART 功能时好时坏 | bias、drive strength 或 sleep/default 状态切换有问题 | 查 pinctrl 状态、休眠唤醒流程 |
@@ -414,12 +563,19 @@ cat /proc/interrupts
 4. GPIO 极性、方向和名字约定经常决定驱动资源能不能真正用对。
 5. 中断脚问题通常跨 pinctrl、GPIO、IRQ 三层，不能只盯一层看。
 6. 很多“probe 成功但功能不通”的问题，本质上是 pinctrl/GPIO 链路没打通。
+>>>>>>> 0e44dbb1d2c2be2b86aa1e8cb21055963b47cba2
 
 ## 关联笔记
 
 1. `Linux-总览`
 2. `Linux-设备树`
+<<<<<<< HEAD
+3. `外设-GPIO基础`
+4. `驱动开发-platform驱动基础`
+5. `硬件-基础知识`
+=======
 3. `Linux-设备树常用属性`
 4. `Linux-内核日志与排障`
 5. `硬件-基础知识`
 6. `驱动开发-platform驱动基础`
+>>>>>>> 0e44dbb1d2c2be2b86aa1e8cb21055963b47cba2

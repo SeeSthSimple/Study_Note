@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp \"Study_Note1/Study_Note/外设/外设-ADC基础.md\" \"Study_Note/外设/\")",
+      "Bash(cp \"Study_Note1/Study_Note/外设/外设-CAN基础.md\" \"Study_Note/外设/\")",
+      "Bash(cp \"Study_Note1/Study_Note/外设/外设-DAC基础.md\" \"Study_Note/外设/\")",
+      "Bash(cp \"Study_Note1/Study_Note/外设/外设-RTC基础.md\" \"Study_Note/外设/\")",
+      "Bash(cp \"Study_Note1/Study_Note/外设/外设-Watchdog基础.md\" \"Study_Note/外设/\")",
+      "Bash(mkdir -p \"Study_Note/硬件\")",
+      "Bash(cp \"Study_Note1/Study_Note/硬件/硬件-ESD与防护基础.md\" \"Study_Note/硬件/\")",
+      "Bash(cp \"Study_Note1/Study_Note/硬件/硬件-GPIO与电平.md\" \"Study_Note/硬件/\")",
+      "Bash(cp \"Study_Note1/Study_Note/硬件/硬件-PCB基础与布局约束.md\" \"Study_Note/硬件/\")",
+      "Bash(cp \"Study_Note1/Study_Note/硬件/硬件-中断基础.md\" \"Study_Note/硬件/\")",
+      "Bash(mkdir -p \"Study_Note/通信协议\")",
+      "Bash(cp \"Study_Note1/Study_Note/通信协议/通信协议-I2C.md\" \"Study_Note/通信协议/\")",
+      "Bash(cp \"Study_Note1/Study_Note/通信协议/通信协议-Modbus.md\" \"Study_Note/通信协议/\")",
+      "Bash(cp \"Study_Note1/Study_Note/通信协议/通信协议-RS232与RS485.md\" \"Study_Note/通信协议/\")",
+      "Bash(mkdir -p \"Study_Note/驱动开发\")",
+      "Bash(cp \"Study_Note1/Study_Note/驱动开发/驱动开发-DMA与数据搬运.md\" \"Study_Note/驱动开发/\")",
+      "Bash(cp \"Study_Note1/Study_Note/驱动开发/驱动开发-GPIO驱动基础.md\" \"Study_Note/驱动开发/\")",
+      "Bash(cp \"Study_Note1/Study_Note/驱动开发/驱动开发-IRQ处理基础.md\" \"Study_Note/驱动开发/\")",
+      "Bash(cp \"Study_Note1/Study_Note/驱动开发/驱动开发-UART驱动基础.md\" \"Study_Note/驱动开发/\")"
+    ]
+  }
+}
